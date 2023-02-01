@@ -1,0 +1,30 @@
+version: "3"
+services:
+  server:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - $PORT:$PORT
+    command: yarn dev
+    volumes:
+      - .:/server
+        # node-modules should not be synced
+      - /server/node_modules
+    environment:
+      NODE_ENV: dev
+      PORT: $PORT
+      PGHOST: database
+      PGDATABASE: $PGDATABASE
+      PGUSER: $PGUSER
+      PGPASSWORD: $PGPASSWORD
+    working_dir: /server
+  database:
+    image: postgres:13
+    command: postgres
+    ports:
+      - $PGPORT:$PGPORT
+    environment:
+      - POSTGRES_DB=$PGDATABASE
+      - POSTGRES_USER=$PGUSER
+      - POSTGRES_PASSWORD=$PGPASSWORD
