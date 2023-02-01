@@ -590,6 +590,11 @@ is-number@^7.0.0:
   resolved "https://registry.yarnpkg.com/is-number/-/is-number-7.0.0.tgz#7535345b896734d5f80c4d06c50955527a14f12b"
   integrity sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==
 
+kall@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/kall/-/kall-0.2.1.tgz#fc61b180ae4ae0c0a9e4bfe8367d52e6aea79d30"
+  integrity sha512-2U72Rs9t6QH1BBho4GBQf/zKmNylFWsOO2RCcPBmSII5pi7F0tZ7P22KlqK7BvQZQyjN4kdZXomexADTkait9A==
+
 klart@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/klart/-/klart-0.2.0.tgz#e3c3e01c9f9c84087c53870ef4599915277ed14f"
@@ -1115,3 +1120,8 @@ yn@3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/yn/-/yn-3.1.1.tgz#1e87401a09d767c1d5eab26a6e4c185182d2eb50"
   integrity sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==
+
+zod@^3.20.2:
+  version "3.20.2"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.20.2.tgz#068606642c8f51b3333981f91c0a8ab37dfc2807"
+  integrity sha512-1MzNQdAvO+54H+EaK5YpyEy0T+Ejo/7YLHS93G3RnYWh5gaotGHwGeN/ZO687qEDU2y4CdStQYXVHIgrUl5UVQ==
