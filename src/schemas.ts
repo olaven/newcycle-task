@@ -12,7 +12,23 @@ const putItemOwnership = zod
   })
   .strict();
 
+export enum TimeUnit {
+  DAY = "day",
+  WEEK = "week",
+  MONTH = "month",
+}
+
+const getCreationStatistics = zod
+  .object({
+    time: zod.nativeEnum(TimeUnit),
+  })
+  .strict();
+
+export type PostItemInstance = zod.infer<typeof postItemInstance>;
+export type PutItemOwnership = zod.infer<typeof putItemOwnership>;
+
 export const schemas = {
   putItemOwnership,
   postItemInstance,
+  getCreationStatistics,
 };

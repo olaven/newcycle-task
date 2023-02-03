@@ -16,7 +16,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
             description text NOT NULL 
         );
 
-        CREATE TABLE IF NOT EXISTS item_instances (
+        CREATE TABLE IF NOT EXISTS items (
             id uuid NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY, 
             base_item_id uuid NOT NULL REFERENCES base_items (id)
         );
@@ -25,7 +25,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
             id uuid NOT NULL DEFAULT uuid_generate_v4() PRIMARY KEY,
             timestamp timestamptz NOT NULL DEFAULT NOW(), 
             owner_id uuid NOT NULL REFERENCES users (id), 
-            item_instance_id uuid NOT NULL REFERENCES item_instances (id)
+            item_id uuid NOT NULL REFERENCES items (id)
         ); 
     `);
 }
@@ -33,7 +33,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
 export async function down(pgm: MigrationBuilder): Promise<void> {
   pgm.sql(`
         DROP TABLE IF EXISTS transfers; 
-        DROP TABLE IF EXISTS item_instances; 
+        DROP TABLE IF EXISTS items; 
         DROP TABLE IF EXISTS items; 
         DROP TABLE IF EXISTS users;
     `);
