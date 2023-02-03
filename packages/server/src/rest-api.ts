@@ -26,12 +26,6 @@ export const restApi = express()
     withValidatedPayload(
       schemas.putItemOwnership,
       async (request, response, { to }) => {
-        const { itemId } = request.params;
-        const item = await database.items.getItem({ itemId });
-        if (!item) {
-          return response.status(404);
-        }
-
         const transfer = await database.items.registerTransfer({
           item,
           to,

@@ -1,5 +1,5 @@
 FROM node:19
 WORKDIR /server
 
-COPY . /server
+COPY packages/server /server
 RUN yarn install

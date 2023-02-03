@@ -1,11 +1,11 @@
 version: "3"
 services:
   server:
-    build: .
+    build: packages/server/Dockerfile
     env_file:
       - .env
     ports:
-      - $PORT:$PORT
+      - $SERVER_PORT:$SERVER_PORT
       - $WS_PORT:$WS_PORT
     command: yarn dev
     volumes:
@@ -14,7 +14,7 @@ services:
       - /server/node_modules
     environment:
       NODE_ENV: dev
-      PORT: $PORT
+      PORT: $SERVER_PORT
       WS_PORT: $WS_PORT
       PGHOST: database
       PGDATABASE: $PGDATABASE
