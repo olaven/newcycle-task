@@ -6,6 +6,7 @@ services:
       - .env
     ports:
       - $PORT:$PORT
+      - $WS_PORT:$WS_PORT
     command: yarn dev
     volumes:
       - .:/server
@@ -14,6 +15,7 @@ services:
     environment:
       NODE_ENV: dev
       PORT: $PORT
+      WS_PORT: $WS_PORT
       PGHOST: database
       PGDATABASE: $PGDATABASE
       PGUSER: $PGUSER
