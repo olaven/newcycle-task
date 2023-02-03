@@ -10,9 +10,16 @@
 
         window.onload = () => {
 
-            const hourlySource = new EventSource("http://localhost:8080/statistics/transfers/hours")
-            hourlySource.onmessage = (event) => {
-                console.log("received", event.data)
+            const hourlyTransferStats = new EventSource("http://localhost:8080/statistics/transfers/hours")
+
+            hourlyTransferStats.onmessage = (event) => {
+                console.log("transfer received", event.data)
+            }
+
+            const hourlyInsertStats = new EventSource("http://localhost:8080/statistics/item-creation/hours")
+
+            hourlyInsertStats.onmessage = (event) => {
+                console.log("item creation received", event.data)
             }
 
 
@@ -23,12 +30,27 @@
                         ["Content-Type"]: "application/json"
                     },
                     body: JSON.stringify({
-                        base_item_id: "c461d872-6ecf-4144-bb05-2e8e823b5b3c"
+                        base_item_id: "00b203eb-ac9f-457c-bbad-544dafa44737"
                     })
                 })
             }
 
-            document.getElementById("button").onclick = postItem
+            document.getElementById("item-button").onclick = postItem
+
+
+            const transferItem = async () => {
+                const response = await fetch(`/items/3ef7a6be-80c0-4acc-8742-44e6c8476d2d/ownership`, {
+                    method: "put",
+                    headers: {
+                        ["Content-Type"]: "application/json"
+                    },
+                    body: JSON.stringify({
+                        to: "83ae3019-ba1c-410c-a984-2fc10eccf05d"
+                    })
+                })
+            }
+
+            document.getElementById("transfer-button").onclick = transferItem
         }
 
     </script>
@@ -38,7 +60,8 @@
     <h1>Newcycle Dashboard</h1>
     <div id="transfer">Transfers: TODO</div>
     <div id="transfer">Item Creation: TODO</div>
-    <button id="button">Post Item</button>
+    <button id="item-button">Post Item</button>
+    <button id="transfer-button">Transfer</button>
 </body>
 
 </html>

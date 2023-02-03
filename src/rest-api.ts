@@ -1,18 +1,22 @@
 import express from "express";
 import { database } from "./database/database";
+import { getPostgresSubscriber } from "./messaging/messaging";
 import { withValidatedPayload } from "./middleware";
 import { schemas } from "./schemas";
 
+const subscriber = getPostgresSubscriber();
 export const restApi = express()
   .use(express.json())
   .post(
     "/items",
     withValidatedPayload(
-      schemas.postItemInstance,
+      schemas.postItem,
       async (request, response, payload) => {
-        //TODO: if base item does not exist, throw
+        const created = await database.items.persistItem({
+          base_item_id: payload.base_item_id,
+          subscriber: subscriber,
+        });
 
-        const created = database.items.persistItem(payload);
         return response.status(201).send(created);
       }
     )
@@ -28,11 +32,13 @@ export const restApi = express()
           return response.status(404);
         }
 
-        await database.items.registerTransfer({
+        const transfer = await database.items.registerTransfer({
           item,
           to,
+          subscriber,
         });
-        return response.status(204);
+
+        return response.status(204).send(transfer);
       }
     )
   );

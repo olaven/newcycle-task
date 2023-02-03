@@ -1,35 +1,12 @@
 import * as klart from "klart";
-import { PostItemInstance } from "../schemas";
 import { BaseItem, Item, Transfer, User } from "./models";
 
-import postgresSubscriber from "pg-listen";
-import { Channel } from "../messaging";
+import { Channel, Subscriber } from "../messaging/messaging";
 
-const subscriber = postgresSubscriber();
-
-subscriber.connect().then(() => {
-  subscriber.notifications.on(Channel.ITEM_CREATION, (payload) => {
-    console.log("GOT PAYLOAD", payload);
-  });
-
-  subscriber.notifications.on(Channel.TRANSFER_UPDATE, (payload) => {
-    console.log("GOT HERE");
-    console.log("GOT PAYLOAD", payload);
-  });
-
-  subscriber.events.on("error", (error) => {
-    console.error("Fatal database connection error:", error);
-    process.exit(1);
-  });
-
-  process.on("exit", () => {
-    console.log("Closing database side sub");
-    subscriber.close();
-  });
-
-  console.log("database sub connected");
-});
-async function persistItem(options: PostItemInstance) {
+async function persistItem(options: {
+  base_item_id: string;
+  subscriber: Promise<Subscriber>;
+}) {
   const item = await klart.first<Item>(
     `
         INSERT INTO items (base_item_id) 
@@ -39,7 +16,7 @@ async function persistItem(options: PostItemInstance) {
     [options.base_item_id]
   );
 
-  await subscriber.notify(Channel.ITEM_CREATION, item);
+  (await options.subscriber).notify(Channel.ITEM_CREATION, item);
   console.log(`Notified on ${Channel.ITEM_CREATION}`);
   return item;
 }
@@ -85,8 +62,12 @@ function persistBaseItem(options: { description: string }) {
   );
 }
 
-function registerTransfer(options: { item: Item; to: string }) {
-  return klart.first<Transfer>(
+async function registerTransfer(options: {
+  item: Item;
+  to: string;
+  subscriber: Promise<Subscriber>;
+}) {
+  const transfer = await klart.first<Transfer>(
     `
       INSERT INTO transfers (item_id, owner_id) 
       VALUES ($1, $2)
@@ -94,6 +75,9 @@ function registerTransfer(options: { item: Item; to: string }) {
     `,
     [options.item.id, options.to]
   );
+
+  await (await options.subscriber).notify(Channel.TRANSFER_UPDATE, transfer);
+  return transfer;
 }
 
 export const items = {

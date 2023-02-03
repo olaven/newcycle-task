@@ -24,11 +24,8 @@ const getCreationStatistics = zod
   })
   .strict();
 
-export type PostItemInstance = zod.infer<typeof postItem>;
-export type PutItemOwnership = zod.infer<typeof putItemOwnership>;
-
 export const schemas = {
   putItemOwnership,
-  postItemInstance: postItem,
+  postItem,
   getCreationStatistics,
 };

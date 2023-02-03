@@ -1,5 +1,14 @@
 import * as klart from "klart";
-import { Statistic, StatisticsFunction } from "../messaging";
+import { TimeUnit } from "../schemas";
+
+export type Statistic = {
+  time: string;
+  count: number;
+};
+
+export type StatisticsFunction = (options: {
+  timeUnit: TimeUnit;
+}) => Promise<Statistic[]>;
 
 const getTransferStatistics: StatisticsFunction = (options) => {
   return klart.rows<Statistic>(

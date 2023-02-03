@@ -1,8 +1,8 @@
 import express from "express";
 import { database } from "./database/database";
-import { Channel, Statistic, StatisticsFunction } from "./messaging";
+import { Statistic, StatisticsFunction } from "./database/statistics";
+import { Channel, getPostgresSubscriber } from "./messaging/messaging";
 import { TimeUnit } from "./schemas";
-import postgresSubscriber from "pg-listen";
 
 /**
  * would have to be stored elsewhere
@@ -19,39 +19,33 @@ const clients: {
   [Channel.ITEM_CREATION]: [],
 };
 
-//TODO: how to hook into database inserts?
-function sendStatisticEvent(channel: Channel, newMessage: Statistic) {
+function publishToClients(channel: Channel, newMessage: Statistic) {
+  console.log("PUBLISHING TO CLIENTS", clients);
   clients[channel].forEach((client) =>
     client.response.write(`data: ${JSON.stringify(newMessage)}\n\n`)
   );
 }
 
-const subscriber = postgresSubscriber();
+getPostgresSubscriber()
+  .then((subscriber) => {
+    subscriber.listenTo(Channel.ITEM_CREATION);
+    subscriber.notifications.on(Channel.ITEM_CREATION, (payload) => {
+      //NOTE: PUBLISHES THE NEW THING, __NOT__ UPDATED STATISTICS
+      console.log("CAUGHT NOTIFY ON SERVER");
+      publishToClients(Channel.ITEM_CREATION, payload);
+    });
+  })
+  .catch(console.error);
 
-subscriber.connect().then(() => {
-  subscriber.listenTo(Channel.ITEM_CREATION);
-  subscriber.listenTo(Channel.TRANSFER_UPDATE);
-
-  subscriber.notifications.on(Channel.ITEM_CREATION, (payload) => {
-    console.log("GOT PAYLOAD", payload);
-  });
-
-  subscriber.notifications.on(Channel.TRANSFER_UPDATE, (payload) => {
-    console.log("GOT HERE");
-    console.log("GOT PAYLOAD", payload);
-  });
-
-  subscriber.events.on("error", (error) => {
-    console.error("Fatal database connection error:", error);
-    process.exit(1);
-  });
-
-  process.on("exit", () => {
-    console.log("Closing server side sub");
-    subscriber.close();
-  });
-  console.log("server side sub connected");
-});
+getPostgresSubscriber()
+  .then((subscriber) => {
+    subscriber.listenTo(Channel.TRANSFER_UPDATE);
+    subscriber.notifications.on(Channel.TRANSFER_UPDATE, (payload) => {
+      //NOTE: PUBLISHES THE NEW THING, __NOT__ UPDATED STATISTICS
+      publishToClients(Channel.TRANSFER_UPDATE, payload);
+    });
+  })
+  .catch(console.error);
 
 export const SSEServer = express()
   .use(express.json())
@@ -85,12 +79,11 @@ function setupStatisticsEndpoint<T>(
     const statistics = await getStatistics({ timeUnit: timeUnit as TimeUnit });
 
     //NOTE: adapted from https://www.digitalocean.com/community/tutorials/nodejs-server-sent-events-build-realtime-app
-    const headers = {
+    response.writeHead(200, {
       "Content-Type": "text/event-stream",
       Connection: "keep-alive",
       "Cache-Control": "no-cache",
-    };
-    response.writeHead(200, headers);
+    });
 
     const data = `data: ${JSON.stringify(statistics)}\n\n`;
 
@@ -101,7 +94,7 @@ function setupStatisticsEndpoint<T>(
       response,
     };
 
-    clients[channel].push(newClient);
+    clients[channel] = [...clients[channel], newClient];
 
     request.on("close", () => {
       console.log(`${newClient.id} Connection closed`);
