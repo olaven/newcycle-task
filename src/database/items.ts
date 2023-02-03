@@ -1,16 +1,47 @@
-import klart from "klart";
+import * as klart from "klart";
 import { PostItemInstance } from "../schemas";
 import { BaseItem, Item, Transfer, User } from "./models";
 
-function persistItem(options: PostItemInstance) {
-  return klart.first<Item>(
+import postgresSubscriber from "pg-listen";
+import { Channel } from "../messaging";
+
+const subscriber = postgresSubscriber();
+
+subscriber.connect().then(() => {
+  subscriber.notifications.on(Channel.ITEM_CREATION, (payload) => {
+    console.log("GOT PAYLOAD", payload);
+  });
+
+  subscriber.notifications.on(Channel.TRANSFER_UPDATE, (payload) => {
+    console.log("GOT HERE");
+    console.log("GOT PAYLOAD", payload);
+  });
+
+  subscriber.events.on("error", (error) => {
+    console.error("Fatal database connection error:", error);
+    process.exit(1);
+  });
+
+  process.on("exit", () => {
+    console.log("Closing database side sub");
+    subscriber.close();
+  });
+
+  console.log("database sub connected");
+});
+async function persistItem(options: PostItemInstance) {
+  const item = await klart.first<Item>(
     `
-          INSERT INTO items (base_item_id) 
-          VALUES ($1)
-          RETURNING *
-      `,
+        INSERT INTO items (base_item_id) 
+        VALUES ($1)
+        RETURNING *
+        `,
     [options.base_item_id]
   );
+
+  await subscriber.notify(Channel.ITEM_CREATION, item);
+  console.log(`Notified on ${Channel.ITEM_CREATION}`);
+  return item;
 }
 
 function getItem(options: { itemId: string }) {

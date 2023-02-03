@@ -1,12 +1,7 @@
-import klart from "klart";
-import { TimeUnit } from "../schemas";
+import * as klart from "klart";
+import { Statistic, StatisticsFunction } from "../messaging";
 
-type Statistic = {
-  time: string;
-  count: number;
-};
-
-function getTransferStatistics(options: { timeUnit: TimeUnit }) {
+const getTransferStatistics: StatisticsFunction = (options) => {
   return klart.rows<Statistic>(
     `
       SELECT 
@@ -18,9 +13,9 @@ function getTransferStatistics(options: { timeUnit: TimeUnit }) {
       `,
     [options.timeUnit]
   );
-}
+};
 
-function getCreationStatistics(options: { timeUnit: TimeUnit }) {
+const getCreationStatistics: StatisticsFunction = (options) => {
   return klart.rows<Statistic>(
     `
       SELECT 
@@ -32,7 +27,7 @@ function getCreationStatistics(options: { timeUnit: TimeUnit }) {
       `,
     [options.timeUnit]
   );
-}
+};
 
 export const statistics = {
   getTransferStatistics,

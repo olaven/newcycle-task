@@ -1,5 +1,4 @@
 import express from "express";
-import * as kall from "kall";
 import { database } from "./database/database";
 import { withValidatedPayload } from "./middleware";
 import { schemas } from "./schemas";
@@ -14,7 +13,7 @@ export const restApi = express()
         //TODO: if base item does not exist, throw
 
         const created = database.items.persistItem(payload);
-        return response.status(kall.CREATED).send(created);
+        return response.status(201).send(created);
       }
     )
   )
@@ -26,14 +25,14 @@ export const restApi = express()
         const { itemId } = request.params;
         const item = await database.items.getItem({ itemId });
         if (!item) {
-          return response.status(kall.NOT_FOUND);
+          return response.status(404);
         }
 
         await database.items.registerTransfer({
           item,
           to,
         });
-        return response.status(kall.UPDATED);
+        return response.status(204);
       }
     )
   );

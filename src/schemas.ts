@@ -1,6 +1,6 @@
 import zod from "zod";
 
-const postItemInstance = zod
+const postItem = zod
   .object({
     base_item_id: zod.string().uuid(),
   })
@@ -24,11 +24,11 @@ const getCreationStatistics = zod
   })
   .strict();
 
-export type PostItemInstance = zod.infer<typeof postItemInstance>;
+export type PostItemInstance = zod.infer<typeof postItem>;
 export type PutItemOwnership = zod.infer<typeof putItemOwnership>;
 
 export const schemas = {
   putItemOwnership,
-  postItemInstance,
+  postItemInstance: postItem,
   getCreationStatistics,
 };

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newcycle Dashboard</title>
+    <script>
+
+        window.onload = () => {
+
+            const hourlySource = new EventSource("http://localhost:8080/statistics/transfers/hours")
+            hourlySource.onmessage = (event) => {
+                console.log("received", event.data)
+            }
+
+
+            const postItem = async () => {
+                const response = await fetch("/items", {
+                    method: "post",
+                    headers: {
+                        ["Content-Type"]: "application/json"
+                    },
+                    body: JSON.stringify({
+                        base_item_id: "c461d872-6ecf-4144-bb05-2e8e823b5b3c"
+                    })
+                })
+            }
+
+            document.getElementById("button").onclick = postItem
+        }
+
+    </script>
+</head>
+
+<body>
+    <h1>Newcycle Dashboard</h1>
+    <div id="transfer">Transfers: TODO</div>
+    <div id="transfer">Item Creation: TODO</div>
+    <button id="button">Post Item</button>
+</body>
+
+</html>
