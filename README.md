@@ -12,6 +12,7 @@
 * frontend lacks typing 
 * stronger typing in backend
 * organization of modules leaves some things to be desired
+* server-side-events only pushes _updates_ to statistics, not an entire new payload
 
 ## Setup 
 The system expects a local `.env` file with the following environment variables: 

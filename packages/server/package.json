@@ -2,12 +2,13 @@
   "name": "server",
   "version": "0.0.1",
   "scripts": {
-    "dev": "yarn migrate:up && ts-node-dev src/index.ts",
+    "dev": "yarn migrate:up && yarn generate:test-data && ts-node-dev src/index.ts",
     "start": "ts-node src/index.ts",
     "migrate": "ts-node node_modules/.bin/node-pg-migrate -j ts",
     "migrate:create": "yarn migrate create",
     "migrate:down": "yarn migrate down",
     "migrate:up": "yarn migrate up",
+    "generate:test-data": "ts-node ./scripts/add-test-data.ts",
     "test": "vitest"
   },
   "dependencies": {

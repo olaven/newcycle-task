@@ -102,7 +102,6 @@ describe("the database functions", () => {
 
       const statistics = await database.statistics.getTransferStatistics({
         timeUnit: TimeUnit.MONTH,
-        from: new Date(0),
       });
 
       expect(statistics.length).to.be.greaterThan(0);
@@ -122,7 +121,6 @@ describe("the database functions", () => {
 
       const statistics = await database.statistics.getCreationStatistics({
         timeUnit: TimeUnit.DAY,
-        from: new Date(0),
       });
       expect(statistics.length).to.be.greaterThan(0);
       for (const statistic of statistics) {

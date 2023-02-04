@@ -4,11 +4,12 @@ import { Statistic, StatisticsFunction } from "./database/statistics";
 import { Channel, getPostgresSubscriber } from "./messaging/messaging";
 import { TimeUnit } from "./schemas";
 
+type GetUpdate = () => Promise<Statistic[]>;
+
 type Client = {
   id: number;
   response: express.Response<any, Record<string, any>>;
-  getUpdate: (latest: Date) => Promise<Statistic[]>;
-  latestDataPoint: Date;
+  getUpdate: GetUpdate;
 };
 /**
  * would have to be stored elsewhere
@@ -24,14 +25,10 @@ const clients: {
   [Channel.ITEM_CREATION]: {},
 };
 
-function upsertStatisticsClient(
-  options: Client & { id?: number; channel: Channel }
-) {
-  console.log("upserting with", options.latestDataPoint);
+function upsertStatisticsClient(options: Client & { channel: Channel }) {
   const newClient = {
     id: options.id ?? Date.now(),
     response: options.response,
-    latestDataPoint: options.latestDataPoint,
     getUpdate: options.getUpdate,
   };
 
@@ -42,13 +39,12 @@ function upsertStatisticsClient(
 
 async function publishToClients(channel: Channel) {
   const allClients = Object.values(clients[channel]);
-  console.log({ allClients });
   await Promise.all(
     allClients.map(async (client) => {
-      const updates = await client.getUpdate(client.latestDataPoint);
+      const updates = await client.getUpdate();
+      console.log("Updates", updates);
       upsertStatisticsClient({
         ...client,
-        latestDataPoint: new Date(),
         channel,
       });
       return client.response.write(`data: ${JSON.stringify(updates)}\n\n`);
@@ -100,7 +96,7 @@ function setupSSEEndpoint<T>(
     next: express.NextFunction
   ) {
     const timeUnit = request.params.timeUnit as TimeUnit;
-    const statistics = await getStatistics({ timeUnit, from: new Date(0) });
+    const statistics = await getStatistics({ timeUnit });
 
     //NOTE: adapted from https://www.digitalocean.com/community/tutorials/nodejs-server-sent-events-build-realtime-app
     response.writeHead(200, {
@@ -111,22 +107,17 @@ function setupSSEEndpoint<T>(
 
     response.write(`data: ${JSON.stringify(statistics)}\n\n`);
 
-    const latestData =
-      statistics.length > 0
-        ? new Date(statistics[statistics.length - 1].time)
-        : new Date(0);
-
     const newClient = upsertStatisticsClient({
       id: undefined,
-      latestDataPoint: latestData,
       response,
       channel,
-      getUpdate: (latest) => getStatistics({ timeUnit, from: latest }),
+      //keeps the client connected with correct time unit
+      getUpdate: () => getStatistics({ timeUnit }),
     });
 
     request.on("close", () => {
-      console.log(`${newClient.id} Connection closed`);
-      clients[channel][newClient.id] = undefined;
+      console.log(`Closing connection for client ${newClient.id}`);
+      delete clients[channel][newClient.id];
     });
   };
 }

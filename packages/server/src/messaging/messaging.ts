@@ -1,4 +1,3 @@
-import { TimeUnit } from "../schemas";
 import postgresSubscriber from "pg-listen";
 
 export enum Channel {

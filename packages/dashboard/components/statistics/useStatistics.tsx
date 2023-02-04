@@ -2,19 +2,13 @@ import React from "react";
 
 const useEventSource = (url: string) => {
   const [data, setData] = React.useState<any[]>([]);
-  const [initialDataReceived, setInitialDataReceived] = React.useState(false);
 
   React.useEffect(() => {
+    console.log("ESTABLISHING CONNECTIO TO", url);
     const source = new EventSource(url);
     source.onmessage = (event) => {
       const updates = JSON.parse(event.data);
-
-      if (initialDataReceived) {
-        setData([...updates, ...data]);
-      } else {
-        setData([...updates]);
-        setInitialDataReceived(true);
-      }
+      setData([...updates]);
     };
     source.onerror = (event) => {
       console.error({
