@@ -17,7 +17,6 @@ services:
     environment:
       NODE_ENV: dev
       PORT: $SERVER_PORT
-      WS_PORT: $WS_PORT
       PGHOST: database
       PGDATABASE: $PGDATABASE
       PGUSER: $PGUSER
@@ -40,7 +39,6 @@ services:
     environment:
       NODE_ENV: dev
       PORT: $DASHBOARD_PORT
-      WS_PORT: $WS_PORT
   database:
     image: postgres:13
     command: postgres
