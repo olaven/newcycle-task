@@ -32,7 +32,7 @@ export const restApi = express()
           subscriber,
         });
 
-        return response.status(204).send(transfer);
+        return response.status(204).send();
       }
     )
   );

@@ -18,7 +18,8 @@ const getTransferStatistics: StatisticsFunction = (options) => {
         COUNT(*) as count
       FROM transfers
       GROUP BY 
-        date_trunc($1, timestamp);
+        date_trunc($1, timestamp)
+      ORDER BY time DESC;
       `,
     [options.timeUnit]
   );
@@ -32,7 +33,8 @@ const getCreationStatistics: StatisticsFunction = (options) => {
         COUNT(*) as count
       FROM items
       GROUP BY 
-        date_trunc($1, created_at);
+        date_trunc($1, created_at)
+      ORDER BY time DESC;
       `,
     [options.timeUnit]
   );
