@@ -1,7 +1,16 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vitest } from "vitest";
 import { database } from "./database";
 import { faker } from "@faker-js/faker";
 import { TimeUnit } from "../schemas";
+import { Subscriber } from "../messaging/messaging";
+
+const subscriber = new Promise<Subscriber>((resolve, _) => {
+  resolve({
+    notify: vitest.fn(() => {
+      /**mock implementation */
+    }),
+  } as any as Subscriber);
+});
 
 describe("the database functions", () => {
   async function persistFakeItem() {
@@ -10,6 +19,7 @@ describe("the database functions", () => {
     });
     const item = await database.items.persistItem({
       base_item_id: baseItem.id,
+      subscriber,
     });
     return item;
   }
@@ -32,6 +42,7 @@ describe("the database functions", () => {
         database.items.persistItem({
           //NOTE: random UUID
           base_item_id: faker.datatype.uuid(),
+          subscriber,
         })
       ).rejects.toThrow();
     });
@@ -53,15 +64,17 @@ describe("the database functions", () => {
 
       const item = await persistFakeItem();
       await database.items.registerTransfer({
-        item: item,
+        item_id: item.id,
         to: userA.id,
+        subscriber,
       });
 
       const ownerAfterTransferToA = await database.items.getOwner({ item });
 
       await database.items.registerTransfer({
-        item: item,
+        item_id: item.id,
         to: userB.id,
+        subscriber,
       });
 
       const ownerAfterTransferToB = await database.items.getOwner({ item });
@@ -76,13 +89,20 @@ describe("the database functions", () => {
       const user = await database.users.persistUser();
       const item = await persistFakeItem();
 
-      await database.items.registerTransfer({ item, to: user.id });
-      await database.items.registerTransfer({ item, to: user.id });
-      await database.items.registerTransfer({ item, to: user.id });
-      await database.items.registerTransfer({ item, to: user.id });
+      await database.items.registerTransfer({
+        item_id: item.id,
+        to: user.id,
+        subscriber,
+      });
+      await database.items.registerTransfer({
+        item_id: item.id,
+        to: user.id,
+        subscriber,
+      });
 
       const statistics = await database.statistics.getTransferStatistics({
         timeUnit: TimeUnit.MONTH,
+        from: new Date(0),
       });
 
       expect(statistics.length).to.be.greaterThan(0);
@@ -102,6 +122,7 @@ describe("the database functions", () => {
 
       const statistics = await database.statistics.getCreationStatistics({
         timeUnit: TimeUnit.DAY,
+        from: new Date(0),
       });
       expect(statistics.length).to.be.greaterThan(0);
       for (const statistic of statistics) {

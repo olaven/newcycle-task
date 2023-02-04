@@ -63,7 +63,7 @@ function persistBaseItem(options: { description: string }) {
 }
 
 async function registerTransfer(options: {
-  item: Item;
+  item_id: string;
   to: string;
   subscriber: Promise<Subscriber>;
 }) {
@@ -73,7 +73,7 @@ async function registerTransfer(options: {
       VALUES ($1, $2)
       RETURNING *;
     `,
-    [options.item.id, options.to]
+    [options.item_id, options.to]
   );
 
   await (await options.subscriber).notify(Channel.TRANSFER_UPDATE, transfer);

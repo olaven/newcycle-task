@@ -9,7 +9,8 @@
 * security does not exist 
 * input validation hardly exists 
 * no time spent on GUI
-* stronger typing 
+* frontend lacks typing 
+* stronger typing in backend
 * organization of modules leaves some things to be desired
 
 ## Setup 

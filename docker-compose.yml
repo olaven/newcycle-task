@@ -1,7 +1,9 @@
 version: "3"
 services:
   server:
-    build: packages/server/Dockerfile
+    build:
+      dockerfile: packages/server/Dockerfile
+      context: .
     env_file:
       - .env
     ports:
@@ -9,7 +11,7 @@ services:
       - $WS_PORT:$WS_PORT
     command: yarn dev
     volumes:
-      - .:/server
+      - ./packages/server:/server
         # node-modules should not be synced
       - /server/node_modules
     environment:
@@ -20,7 +22,25 @@ services:
       PGDATABASE: $PGDATABASE
       PGUSER: $PGUSER
       PGPASSWORD: $PGPASSWORD
-    working_dir: /server
+    depends_on:
+      - database
+  dashboard:
+    build:
+      dockerfile: packages/dashboard/Dockerfile
+      context: .
+    env_file:
+      - .env
+    ports:
+      - $DASHBOARD_PORT:$DASHBOARD_PORT
+    command: yarn dev
+    volumes:
+      - ./packages/dashboard:/dashboard
+        # node-modules should not be synced
+      - /dashboard/node_modules
+    environment:
+      NODE_ENV: dev
+      PORT: $DASHBOARD_PORT
+      WS_PORT: $WS_PORT
   database:
     image: postgres:13
     command: postgres

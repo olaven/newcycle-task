@@ -27,7 +27,7 @@ export const restApi = express()
       schemas.putItemOwnership,
       async (request, response, { to }) => {
         const transfer = await database.items.registerTransfer({
-          item,
+          item_id: request.params.itemId,
           to,
           subscriber,
         });
