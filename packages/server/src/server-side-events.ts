@@ -1,16 +1,15 @@
 import express from "express";
 import { database } from "./database/database";
 import { Statistic, StatisticsFunction } from "./database/statistics";
-import { Channel, getPostgresSubscriber } from "./messaging/messaging";
+import { Channel, getEventSubscriber } from "./messaging/messaging";
 import { TimeUnit } from "./schemas";
-
-type GetUpdate = () => Promise<Statistic[]>;
 
 type Client = {
   id: number;
   response: express.Response<any, Record<string, any>>;
-  getUpdate: GetUpdate;
+  getUpdate: () => Promise<Statistic[]>;
 };
+
 /**
  * would have to be stored elsewhere
  * (redis, other db?) to retain clients between
@@ -25,46 +24,28 @@ const clients: {
   [Channel.ITEM_CREATION]: {},
 };
 
-function upsertStatisticsClient(options: Client & { channel: Channel }) {
-  const newClient = {
-    id: options.id ?? Date.now(),
-    response: options.response,
-    getUpdate: options.getUpdate,
-  };
-
-  clients[options.channel][newClient.id] = newClient;
-
-  return newClient;
-}
-
 async function publishToClients(channel: Channel) {
   const allClients = Object.values(clients[channel]);
   await Promise.all(
     allClients.map(async (client) => {
       const updates = await client.getUpdate();
-      console.log("Updates", updates);
-      upsertStatisticsClient({
-        ...client,
-        channel,
-      });
       return client.response.write(`data: ${JSON.stringify(updates)}\n\n`);
     })
   );
 }
 
-getPostgresSubscriber()
-  .then((subscriber) => {
-    subscriber.listenTo(Channel.ITEM_CREATION);
-    subscriber.notifications.on(Channel.ITEM_CREATION, async () => {
-      await publishToClients(Channel.ITEM_CREATION);
-    });
-
-    subscriber.listenTo(Channel.TRANSFER_UPDATE);
-    subscriber.notifications.on(Channel.TRANSFER_UPDATE, async () => {
-      await publishToClients(Channel.TRANSFER_UPDATE);
-    });
-  })
-  .catch(console.error);
+/**
+ * Setting up listeners to postgres
+ * events
+ */
+getEventSubscriber({
+  listeners: {
+    [Channel.ITEM_CREATION]: publishToClients,
+    [Channel.TRANSFER_UPDATE]: publishToClients,
+  },
+})
+  .catch(console.error)
+  .then(() => console.log(`EventSubscriber listening`));
 
 export const SSEServer = express()
   .use(express.json())
@@ -120,4 +101,16 @@ function setupSSEEndpoint<T>(
       delete clients[channel][newClient.id];
     });
   };
+}
+
+function upsertStatisticsClient(options: Client & { channel: Channel }) {
+  const newClient = {
+    id: options.id ?? Date.now(),
+    response: options.response,
+    getUpdate: options.getUpdate,
+  };
+
+  clients[options.channel][newClient.id] = newClient;
+
+  return newClient;
 }

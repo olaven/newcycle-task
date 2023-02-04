@@ -1,10 +1,13 @@
 import express from "express";
 import { database } from "./database/database";
-import { getPostgresSubscriber } from "./messaging/messaging";
+import { getEventSubscriber } from "./messaging/messaging";
 import { withValidatedPayload } from "./middleware";
 import { schemas } from "./schemas";
 
-const subscriber = getPostgresSubscriber();
+const subscriber = getEventSubscriber({
+  // should only publish
+  listeners: {},
+});
 export const restApi = express()
   .use(express.json())
   .post(
