@@ -8,7 +8,6 @@ services:
       - .env
     ports:
       - $SERVER_PORT:$SERVER_PORT
-      - $WS_PORT:$WS_PORT
     command: yarn dev
     volumes:
       - ./packages/server:/server
