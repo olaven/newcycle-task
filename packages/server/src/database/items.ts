@@ -17,7 +17,6 @@ async function persistItem(options: {
   );
 
   (await options.subscriber).notify(Channel.ITEM_CREATION, item);
-  console.log(`Notified on ${Channel.ITEM_CREATION}`);
   return item;
 }
 

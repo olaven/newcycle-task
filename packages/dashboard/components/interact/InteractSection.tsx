@@ -5,6 +5,5 @@ export const InteractSection = () => (
   <div>
     <CreateItems />
     <TransferItems />
-    <h3>Transfer Item between two users</h3>
   </div>
 );

@@ -16,7 +16,10 @@ const transferLegoSet = async () => {
 };
 
 export const TransferItems = () => (
-  <button onClick={transferLegoSet}>
-    Transfer an instance of the LEGO set
-  </button>
+  <>
+    <h3>Transfer Item between two users</h3>
+    <button onClick={transferLegoSet}>
+      Transfer an instance of the LEGO set
+    </button>
+  </>
 );
